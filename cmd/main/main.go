@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"log"
-	"meeble/models"
+	"meeble/pkg/db"
+	"meeble/pkg/models"
 	"os"
 )
 
@@ -39,8 +40,22 @@ func main() {
 				return errors.New("you have to specify what is your mood")
 			}
 
-			record := models.NewRecord(mood, reason)
-			fmt.Printf("record created successfully: %s: %s", record.Mood, record.Reason)
+			localDB, err := db.NewLocalDB("moods.db")
+			if err != nil {
+				return err
+			}
+
+			m := &models.Mood{Mood: mood, Reason: reason}
+			if err := models.CreateMood(localDB.DB, m); err != nil {
+				return err
+			}
+
+			m, err = models.GetFirstMood(localDB.DB)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(m)
 
 			return nil
 		},
