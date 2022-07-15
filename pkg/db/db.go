@@ -11,14 +11,28 @@ type LocalDB struct {
 	*gorm.DB
 }
 
+type TempDB struct {
+	*gorm.DB
+}
+
 func NewLocalDB(path string) (*LocalDB, error) {
 	conn, err := setup(path, &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	ldb := &LocalDB{path, conn}
-	return ldb, nil
+	localDB := &LocalDB{path, conn}
+	return localDB, nil
+}
+
+func NewTempDB() (*TempDB, error) {
+	conn, err := setup("file::memory:?cache=shared", &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	tempDB := &TempDB{conn}
+	return tempDB, nil
 }
 
 func setup(path string, config *gorm.Config) (*gorm.DB, error) {
